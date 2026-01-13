@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openedx-ai-course-creator"
+version = "0.1.0"
+dependencies = [
+  "Django>=3.2",
+  "edx-django-utils",
+]
+
+[project.entry-points."openedx.django_apps"]
+ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"

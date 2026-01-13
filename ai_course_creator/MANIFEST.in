@@ -1,0 +1,2 @@
+recursive-include ai_course_creator/templates *
+recursive-include ai_course_creator/static *

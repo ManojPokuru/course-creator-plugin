@@ -1,0 +1,2 @@
+[openedx.django_apps]
+ai_course_creator = ai_course_creator.apps:AiCourseCreatorConfig
