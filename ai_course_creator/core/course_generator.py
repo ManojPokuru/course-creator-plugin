@@ -4,6 +4,7 @@ import uuid
 from typing import Dict, List, Any
 import google.generativeai as genai
 import httpx
+import requests
 from ..utils.json_parser import safe_parse_llm_json
 import logging
 
@@ -16,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 class CourseGenerator:
     def __init__(self):
-        genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+        genai.configure(api_key=os.getenv('AI_COURSE_CREATOR_GEMINI_API_KEY'))
         self.model = genai.GenerativeModel('gemini-2.0-flash')
         self.assessment_generator = AssessmentGenerator()
     
-    def generate_course_structure(self, title: str, audience: str, duration: str, components: List[str], source_material: str |None = None) -> Course:
+    def generate_course_structure(self, title: str, audience: str, duration: str, components: List[str], assessment_types: List[str], include_videos: bool = True, source_material: str |None = None) -> Course:
         """Generate the hierarchical course structure using Gemini"""
         
         try:
@@ -47,7 +48,7 @@ class CourseGenerator:
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.0,
-                    max_output_tokens=4000,
+                    max_output_tokens=9000,
                     response_mime_type="application/json",
                 
                 )
@@ -81,9 +82,10 @@ class CourseGenerator:
                 title,
                 audience,
                 duration,
+                include_videos
             )
 
-            assessment_types = ["multiple-choice", "checkbox", "text-input", "dropdown", "numerical"]
+          
             
 
             course = self.assessment_generator.generate_assessments(
@@ -97,7 +99,7 @@ class CourseGenerator:
             raise Exception(f"Course structure generation failed: {str(e)}")
     
     def _create_structure_prompt(self, title: str, audience: str, duration: str, components: List[str], source_material: str | None = None) -> str:
-        # Map duration to actual time and calculate structure
+        
         duration_mapping = {
             "short": "1-2 hours",
             "medium": "3-5 hours", 
@@ -177,6 +179,30 @@ REFERENCE MATERIAL (summarized):
           {'- Unit: "Basic Terminology and Concepts" (' + unit_time_range.split('-')[1] + ' min)' if units_per_subsection == 3 else ''}
         
         IMPORTANT: Format all descriptions in HTML using <p>, <strong>, <em> tags.
+
+        
+        CONTENT DEPTH REQUIREMENTS (MANDATORY):
+
+- SECTION descriptions must be LONG and DETAILED (4–6 paragraphs).
+  They should explain:
+  • Overall theory
+  • Why the topic matters
+  • Real-world relevance
+  • What learners will gain
+
+- SUBSECTION descriptions must be MEDIUM–LONG (3–4 paragraphs).
+  They should:
+  • Break down concepts
+  • Explain relationships
+  • Provide conceptual examples
+
+- UNIT content must be VERY DETAILED (step-by-step explanations).
+  Units are where practical depth, workflows, and examples live.
+
+- Text is PRIMARY at ALL levels.
+- Videos are OPTIONAL and ONLY for UNITS.
+- NEVER reduce text because a video exists.
+
         
         Return ONLY a valid JSON object exactly matching this schema:
         {{
@@ -192,9 +218,7 @@ REFERENCE MATERIAL (summarized):
                                 {{
                                     "title": "Unit Title",
                                     "content_type": "text_video",
-                                    "estimated_reading_time": 4,
-                                    "estimated_video_time": 8,
-                                    "total_time": 12
+                                    "video_required": true
                                 }}
                             ]
                         }}
@@ -269,8 +293,35 @@ REFERENCE MATERIAL (summarized):
 - Provide multiple learning paths
 - Include both foundational and advanced materials
 """
+
+
+    def _normalize_youtube_url(self, url: str | None) -> str | None:
+        """Normalize any YouTube URL to embed format"""
+        if not url:
+            return None
     
-    def _build_course_from_structure(self, structure_data: Dict, title: str, audience: str, duration: str) -> Course:
+        url = url.strip()
+    
+    # Already an embed URL
+        if "youtube.com/embed/" in url:
+            return url
+    
+    # Extract from youtube.com/watch?v= URL
+        if "watch?v=" in url:
+            video_id = url.split("watch?v=")[1].split("&")[0].strip()
+            if len(video_id) == 11:
+                return f"https://www.youtube.com/embed/{video_id}"
+    
+    # Extract from youtu.be/ URL
+        if "youtu.be/" in url:
+            video_id = url.split("youtu.be/")[1].split("?")[0].strip()
+            if len(video_id) == 11:
+                return f"https://www.youtube.com/embed/{video_id}"
+    
+        return None
+
+    
+    def _build_course_from_structure(self, structure_data: Dict, title: str, audience: str, duration: str, include_videos: bool ) -> Course:
         """Convert JSON structure to Course objects"""
         
         course = Course(
@@ -295,13 +346,25 @@ REFERENCE MATERIAL (summarized):
                     description=subsection_data.get('description', '')
                 )
                 
-                for unit_data in subsection_data.get('units', []):
+                
+
+                units = subsection_data.get('units') or []
+
+                for unit_data in units:
+                    video_url = None
+                    content_type = "text"
+                    
+                    if include_videos:
+                        search_query = f"{unit_data.get('title', '')} tutorial"
+                        video_url = self.search_youtube_video(search_query)
+
+                        if video_url:
+                            content_type = "text_video"
                     unit = Unit(
                         id=str(uuid.uuid4()),
                         title=unit_data.get('title', ''),
-                        content_type=unit_data.get('content_type', 'text_video'),
-                        reading_time=unit_data.get('estimated_reading_time', unit_data.get('estimated_time', 5)),
-                        video_duration=unit_data.get('estimated_video_time', 8)
+                        content_type="text_video" if include_videos else "text",
+                        video_url=video_url
                     )
                     subsection.add_unit(unit)
                 
@@ -310,7 +373,104 @@ REFERENCE MATERIAL (summarized):
             course.add_section(section)
         
         return course
+    def search_youtube_video(self, search_query: str) -> str | None:
+        """Search YouTube using Tavily and return an EMBED URL"""
+
+        if not search_query:
+            return None
+
+        tavily_api_key = os.getenv("AI_COURSE_CREATOR_TAVILY_API_KEY")
+        if not tavily_api_key:
+            logger.error("TAVILY_API_KEY not set")
+            return None
+
+        try:
+            response = requests.post(
+                "https://api.tavily.com/search",
+            json={
+                "api_key": tavily_api_key,
+                "query": f"{search_query} site:youtube.com/watch",
+                "search_depth": "basic",
+                "max_results": 5
+            },
+            timeout=15
+        )
+
+            data = response.json()
+            results = data.get("results", [])
+
+            for result in results:
+                url = result.get("url")
+                video_id = self._extract_video_id(url)
+                if video_id:
+                    embed_url = f"https://www.youtube.com/embed/{video_id}"
+                    logger.info(f"✓ Found YouTube video via Tavily: {embed_url}")
+                    return embed_url
+
+            logger.debug(f"No YouTube video found via Tavily for: {search_query}")
+            return None
+
+        except Exception as e:
+            logger.error(f"Tavily YouTube search failed: {str(e)}")
+            return None
+
     
+
+    def _extract_video_id(self, video_id_or_url: str) -> str | None:
+        if 'playlist?list=' in video_id_or_url or '/shorts/' in video_id_or_url:
+            return None
+
+        """Extract just the video ID from any format"""
+        if not video_id_or_url:
+            return None
+    
+        video_id_or_url = str(video_id_or_url).strip()
+    
+    # If already valid ID (11 characters)
+        if len(video_id_or_url) == 11 and all(c.isalnum() or c in '-_' for c in video_id_or_url):
+            logger.info(f"✓ Valid video ID: {video_id_or_url}")
+            return video_id_or_url
+    
+        try:
+        # Extract from youtube.com/embed/ URL
+            if '/embed/' in video_id_or_url:
+                video_id = video_id_or_url.split('/embed/')[1].split('?')[0].strip()
+                if len(video_id) == 11:
+                    logger.info(f"✓ Extracted from embed URL: {video_id}")
+                    return video_id
+        
+        # Extract from youtube.com/watch?v= URL
+            if 'watch?v=' in video_id_or_url:
+                video_id = video_id_or_url.split('watch?v=')[1].split('&')[0].strip()
+                if len(video_id) == 11:
+                    logger.info(f"✓ Extracted from watch URL: {video_id}")
+                    return video_id
+        
+        # Extract from youtu.be/ URL
+            if 'youtu.be/' in video_id_or_url:
+                video_id = video_id_or_url.split('youtu.be/')[1].split('?')[0].strip()
+                if len(video_id) == 11:
+                    logger.info(f"✓ Extracted from youtu.be URL: {video_id}")
+                    return video_id
+        
+        # Extract from youtube.com/v/ URL
+            if '/v/' in video_id_or_url:
+                video_id = video_id_or_url.split('/v/')[1].split('?')[0].strip()
+                if len(video_id) == 11:
+                    logger.info(f"✓ Extracted from /v/ URL: {video_id}")
+                    return video_id
+    
+        except (IndexError, AttributeError) as e:
+                logger.error(f"Error extracting video ID from {video_id_or_url}: {str(e)}")
+    
+    # Last resort - validate it's a real ID
+        if len(video_id_or_url) == 11 and all(c.isalnum() or c in '-_' for c in video_id_or_url):
+            logger.info(f"✓ Accepted as video ID (fallback): {video_id_or_url}")
+            return video_id_or_url
+    
+        logger.error(f"✗ Could not extract valid video ID from: {video_id_or_url}")
+        return None
+
     def _extract_json_from_response(self, content: str) -> str:
         """Extract JSON from Gemini response, handling markdown code blocks"""
         content = content.strip()

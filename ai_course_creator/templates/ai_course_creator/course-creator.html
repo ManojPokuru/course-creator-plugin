@@ -1,0 +1,59 @@
+##mako 
+
+<%page expression_filter="h"/>
+
+<%inherit file="../base.html"/>
+
+<%namespace name="static" file="../static_content.html"/>
+
+<%!
+from django.urls import reverse
+from django.utils.translation import gettext as _
+%>
+
+<%block name="title">
+    ${_("AI Course Creator")}
+</%block>
+
+<%block name="css_extra">
+    <link rel="stylesheet" href="${static.url('ai_course_creator/scss/ai_course_creator/course-creator.css')}" />
+</%block>
+
+<%block name="content">
+
+<div class="bg-white overflow-x-hidden">
+
+    <section id="hero-section"></section>
+
+    <section id="document-upload-section" class="hidden"></section>
+
+    <section id="audience-section" class="hidden"></section>
+    <section id="duration-section" class="hidden"></section>
+    <section id="component-section" class="hidden"></section>
+    <section id="assessment-section" class="hidden"></section>
+    <section id="generation-section" class="hidden"></section>
+    <section id="preview-section" class="hidden"></section>
+
+</div>
+
+</%block>
+
+<%block name="js_extra">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+    window.GENERATE_COURSE_URL = "${reverse('ai_course_creator_generate')}";
+</script>
+
+<script src="${static.url('ai_course_creator/js/ai_course_creator/state.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/hero.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/documentUpload.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/assessment.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/component.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/coursepreview.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/duration.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/generation.js')}"></script>
+<script src="${static.url('ai_course_creator/js/ai_course_creator/audience.js')}"></script>
+
+</%block>

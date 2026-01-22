@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class ContentGenerator:
     def __init__(self):
-        genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+        genai.configure(api_key=os.getenv('AI_COURSE_CREATOR_GEMINI_API_KEY'))
         self.model = genai.GenerativeModel('gemini-2.0-flash')
     
     def generate_course_content(self, course_structure: Course, components: List[str], use_web_search: bool = True) -> Course:
@@ -32,46 +32,98 @@ class ContentGenerator:
         
         try:
             # Set unit to text_video type by default for rich content
-            unit.content_type = "text_video"
+           
             
             prompt = f"""
-            Create comprehensive educational content for this unit as a text+video learning card:
-            
-            Course: {course_title}
-            Section: {section_title}
-            Subsection: {subsection_title}
-            Unit: {unit.title}
-            
-            Target Content Types: {', '.join(components)}
-            
-            IMPORTANT: Format ALL content in HTML using proper tags. DO NOT include <html>, <head>, or <body> tags.
-            
-            Generate the following structure in HTML format:
-            
-            1. **Overview Section**: 2-3 paragraphs explaining the topic using <p> tags
-            2. **Learning Objectives**: Use <h3> for heading and <ul><li> for 3-4 bullet points
-            3. **Key Concepts**: Use <h3> for heading and <div> or <p> for content
-            4. **Practical Examples**: If applicable, use <h3> for heading, <pre><code> for code snippets, <p> for explanations
-            5. **Important Notes**: Use <h3> for heading and <div class="highlight"> or <strong> for emphasis
-            
-            HTML Requirements:
-            - Use semantic HTML tags: <h3>, <p>, <ul>, <li>, <strong>, <em>, <code>, <pre>
-            - For code examples: <pre><code class="language-[language]">code here</code></pre>
-            - For highlights: <div class="highlight"> or <span class="highlight">
-            - For important terms: <strong> or <em>
-            - Structure with proper headings and paragraphs
-            
-            Example format:
-            <p>Introduction paragraph with <strong>key terms</strong> and concepts...</p>
-            
-            <h3>Learning Objectives</h3>
-            <ul>
-            <li>Objective 1</li>
-            <li>Objective 2</li>
-            </ul>
-            
-            Return ONLY the HTML content without any markdown or plain text formatting.
-            """
+Create a complete, high-quality learning unit for a professional learning platform.
+
+Course: {course_title}
+Section: {section_title}
+Subsection: {subsection_title}
+Unit: {unit.title}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORE RULES (NON-NEGOTIABLE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. EVERY unit MUST include text-based explanations.
+   Text is NEVER optional.
+
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTENT DEPTH REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+- Lines must be meaningful instructional content (not filler)
+- Minimum 60–80 lines of meaningful instructional text
+- Content must be detailed, structured, and professional
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MANDATORY HTML STRUCTURE (ORDER MATTERS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<h3>Overview</h3>
+- 4–6 long <p> paragraphs
+- Explain the topic from fundamentals
+- Use <strong>key terms</strong> and <em>important ideas</em>
+
+
+<h3>Conceptual Flow</h3>
+- Step-by-step explanation
+- Include at least one flowchart:
+<pre><code>
+Input → Processing → Decision → Output
+</code></pre>
+
+<h3>Key Concepts Explained</h3>
+- Multiple long paragraphs
+- Deep explanation of each idea
+- Increase depth if video is missing
+
+<h3>Practical Examples</h3>
+- Real-world use cases
+- Expand section if video is missing
+
+🔥 CODING RULE (IMPORTANT)
+- If the unit involves programming, algorithms, logic, or data:
+  - Include at least ONE working example
+<pre><code class="language-python">
+# example code here
+</code></pre>
+- If coding is NOT relevant, do NOT force it
+
+<h3>Visual Aids</h3>
+- Include at least TWO diagrams or image placeholders:
+<figure>
+  <img src="" alt="Diagram explaining key concept" />
+  <figcaption>Explanation of the diagram</figcaption>
+</figure>
+
+<h3>Common Mistakes & Notes</h3>
+- Use <div class="highlight"> for warnings
+- Add extra explanations if no video exists
+
+<h3>Summary & Takeaways</h3>
+- 5–7 strong bullet points
+- Reinforce learning clearly
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Output ONLY valid HTML
+- NO markdown
+- NO <html>, <head>, <body>
+- NO external links
+- Content must stand alone even WITHOUT video
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY the final HTML.
+"""
+
             
             full_prompt = "You are an expert educator creating HTML-formatted educational content that pairs with video lessons. All content must be in proper HTML format for display in a learning management system.\n\n" + prompt
             
@@ -83,7 +135,7 @@ class ContentGenerator:
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
-                    max_output_tokens=1500
+                    max_output_tokens=8000
                 )
             )
             
@@ -138,7 +190,7 @@ class ContentGenerator:
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.6,
-                    max_output_tokens=300
+                    max_output_tokens=3000
                 )
             )
             
@@ -178,7 +230,7 @@ class ContentGenerator:
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
-                    max_output_tokens=800
+                    max_output_tokens=8000
                 )
             )
             

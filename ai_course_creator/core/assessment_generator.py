@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class AssessmentGenerator:
     def __init__(self):
-        genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+        genai.configure(api_key=os.getenv('AI_COURSE_CREATOR_GEMINI_API_KEY'))
         self.model = genai.GenerativeModel('gemini-2.0-flash')
     
     def generate_assessments(self, course_structure: Course, assessment_types: List[str]) -> Course:
@@ -239,7 +239,7 @@ class AssessmentGenerator:
                 full_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
-                    max_output_tokens=500
+                    max_output_tokens=5000
                 )
             )
             
