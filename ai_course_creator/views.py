@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from pypdf import PdfReader
 
 from .core.course_generator import CourseGenerator
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
 
 
 @csrf_exempt
@@ -56,3 +59,7 @@ def generate_course(request):
             "json": course.to_dict()
         }
     )
+
+@login_required
+def studio_page(request):
+    return render(request, "ai_course_creator/studio.html")
