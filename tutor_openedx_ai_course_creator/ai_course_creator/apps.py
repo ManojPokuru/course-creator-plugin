@@ -1,8 +1,10 @@
 from django.apps import AppConfig
 
+
 class AiCourseCreatorConfig(AppConfig):
     name = "ai_course_creator"
     verbose_name = "AI Course Creator"
+    default_auto_field = 'django.db.models.BigAutoField'
 
     plugin_app = {
         "settings_config": {
@@ -22,11 +24,6 @@ class AiCourseCreatorConfig(AppConfig):
             },
         },
         "urls_config": {
-            "lms.djangoapp": {
-                "namespace": "ai_course_creator",
-                "regex": r"^ai-course-creator/",
-                "relative_path": "urls",
-            },
             "cms.djangoapp": {
                 "namespace": "ai_course_creator",
                 "regex": r"^ai-course-creator/",
@@ -34,3 +31,7 @@ class AiCourseCreatorConfig(AppConfig):
             },
         },
     }
+
+    def ready(self):
+        """Initialize the plugin"""
+        pass
