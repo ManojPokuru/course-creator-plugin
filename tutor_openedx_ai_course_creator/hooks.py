@@ -13,14 +13,15 @@ def _add_ai_course_creator_defaults(items):
 # --------------------------------
 # Install plugin from GitHub
 # --------------------------------
-hooks.Filters.ENV_PATCHES.add_item(
-    (
+@hooks.Filters.ENV_PATCHES.add()
+def install_ai_course_creator(patches):
+    patches.append((
         "openedx-dockerfile-post-python-requirements",
-        """RUN pip install git+https://github.com/ManojPokuru/course-creator-plugin.git
+        """
+RUN /openedx/venv/bin/pip install git+https://github.com/ManojPokuru/course-creator-plugin.git
 """
-    )
-)
-
+    ))
+    return patches
 
 # --------------------------------
 # LMS Django settings
