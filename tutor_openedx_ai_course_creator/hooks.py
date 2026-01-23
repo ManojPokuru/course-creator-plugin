@@ -23,6 +23,20 @@ hooks.Filters.ENV_PATCHES.add_item(
 
 
 # --------------------------------
+# LMS Django settings
+# --------------------------------
+@hooks.Filters.ENV_PATCHES.add()
+def _patch_lms_settings(patches):
+    patches.append((
+        "openedx-lms-settings",
+        """
+INSTALLED_APPS += ["ai_course_creator"]
+"""
+    ))
+    return patches
+
+
+# --------------------------------
 # CMS Django settings
 # --------------------------------
 @hooks.Filters.ENV_PATCHES.add()
@@ -31,6 +45,24 @@ def _patch_cms_settings(patches):
         "openedx-cms-settings",
         """
 INSTALLED_APPS += ["ai_course_creator"]
+"""
+    ))
+    return patches
+
+
+# --------------------------------
+# LMS URLs
+# --------------------------------
+@hooks.Filters.ENV_PATCHES.add()
+def _patch_lms_urls(patches):
+    patches.append((
+        "openedx-lms-urls",
+        """
+from django.urls import include, path
+
+urlpatterns += [
+    path("", include("ai_course_creator.urls")),
+]
 """
     ))
     return patches
