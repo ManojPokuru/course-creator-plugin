@@ -11,15 +11,16 @@ def _add_ai_course_creator_defaults(items):
 
 
 # --------------------------------
-# COPY Django app into Open edX image  🔴 REQUIRED
+# Install plugin from GitHub
 # --------------------------------
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "openedx-dockerfile-post-python-requirements",
-        """ RUN pip install tutor-openedx-ai-course-creator
+        """RUN pip install git+https://github.com/ManojPokuru/course-creator-plugin.git
 """
     )
 )
+
 
 # --------------------------------
 # CMS Django settings
