@@ -4,18 +4,11 @@ from django.apps import AppConfig
 class AiCourseCreatorConfig(AppConfig):
     name = "ai_course_creator"
     verbose_name = "AI Course Creator"
-    default_auto_field = 'django.db.models.BigAutoField'
+    default_auto_field = "django.db.models.BigAutoField"
 
     plugin_app = {
         "settings_config": {
-            "lms.djangoapp": {
-                "common": {
-                    "INSTALLED_APPS": [
-                        "ai_course_creator",
-                    ],
-                },
-            },
-            "cms.djangoapp": {
+            "cms": {
                 "common": {
                     "INSTALLED_APPS": [
                         "ai_course_creator",
@@ -24,7 +17,7 @@ class AiCourseCreatorConfig(AppConfig):
             },
         },
         "urls_config": {
-            "cms.djangoapp": {
+            "cms": {
                 "namespace": "ai_course_creator",
                 "regex": r"^ai-course-creator/",
                 "relative_path": "urls",
@@ -33,5 +26,4 @@ class AiCourseCreatorConfig(AppConfig):
     }
 
     def ready(self):
-        """Initialize the plugin"""
         pass
