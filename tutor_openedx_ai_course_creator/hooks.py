@@ -2,9 +2,14 @@ from tutor import hooks
 
 hooks.Filters.ENV_PATCHES.add_item(
     (
-        "openedx-dockerfile-post-python-requirements",
+        "local-docker-compose-dev-services",
         """
-RUN pip install git+https://github.com/ManojPokuru/course-creator-plugin.git@main
+lms:
+  volumes:
+    - C:\\Users\\Unify\\Desktop\\studio-course-creator-plugin:/mnt/ai_course_creator
+cms:
+  volumes:
+    - C:\\Users\\Unify\\Desktop\\studio-course-creator-plugin:/mnt/ai_course_creator
 """
     )
 )
