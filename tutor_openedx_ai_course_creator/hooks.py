@@ -1,11 +1,17 @@
 from tutor import hooks
 
+from tutor import hooks
+
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "openedx-dockerfile-post-python-requirements",
         """
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install git+https://github.com/ManojPokuru/course-creator-plugin.git@main
+RUN pip install --upgrade pip setuptools wheel build
+RUN git clone https://github.com/ManojPokuru/course-creator-plugin.git /tmp/ai_course_creator
+WORKDIR /tmp/ai_course_creator
+RUN python -m build
+RUN pip install dist/*.whl
+WORKDIR /
 """
     )
 )
