@@ -15,6 +15,7 @@ dependencies = [
     "google-generativeai",
     "pypdf",
     "requests",
+    "httpx",
 ]
 
 [project.entry-points."tutor.plugin.v1"]

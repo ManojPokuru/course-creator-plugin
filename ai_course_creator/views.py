@@ -21,7 +21,7 @@ def generate_course(request):
             status=400
         )
 
-    # OPTIONAL PDF HANDLING (INLINE)
+    
     source_material = None
     uploaded_pdf = request.FILES.get("source_pdf")
 
@@ -50,7 +50,7 @@ def generate_course(request):
         audience=course_level,
         duration="medium",
         components=["text", "video"],
-        source_material=source_material  # ✅ optional, works either way
+        source_material=source_material  
     )
 
     return JsonResponse(
