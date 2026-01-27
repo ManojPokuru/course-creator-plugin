@@ -4,7 +4,8 @@ hooks.Filters.ENV_PATCHES.add_item(
     (
         "openedx-dockerfile-post-python-requirements",
         """
-RUN cd /tmp && git clone https://github.com/ManojPokuru/course-creator-plugin.git && cd course-creator-plugin && pip install -e .
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install git+https://github.com/ManojPokuru/course-creator-plugin.git@main
 """
     )
 )
