@@ -6,13 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "tutor-openedx-ai-course-creator"
 version = "0.1.0"
 description = "AI Course Creator plugin for Open edX and Tutor"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+requires-python = ">=3.8"
 dependencies = [
-  "tutor>=20.0.0,<21.0.0",
-  "Django>=3.2",
-  "edx-django-utils",
-  "google-generativeai",
-  "pypdf",
-  "requests",
+    "tutor>=20.0.0,<21.0.0",
+    "Django>=3.2",
+    "edx-django-utils",
+    "google-generativeai",
+    "pypdf",
+    "requests",
 ]
 
 [project.entry-points."tutor.plugin.v1"]
@@ -22,7 +24,14 @@ openedx_ai_course_creator = "tutor_openedx_ai_course_creator.hooks"
 ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"
 
 [tool.setuptools]
-packages = ["ai_course_creator", "tutor_openedx_ai_course_creator"]
+py-modules = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ai_course_creator*", "tutor_openedx_ai_course_creator*"]
 
 [tool.setuptools.package-data]
 ai_course_creator = ["templates/**/*", "static/**/*"]
+
+[tool.setuptools.data-files]
+"templates/plugins/ai_course_creator" = ["tutor_openedx_ai_course_creator/templates/**/*"]
