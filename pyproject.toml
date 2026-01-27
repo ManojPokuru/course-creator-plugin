@@ -20,10 +20,10 @@ dependencies = [
 [project.entry-points."tutor.plugin.v1"]
 openedx_ai_course_creator = "tutor_openedx_ai_course_creator.hooks"
 
-[project.entry-points."lms.djangoapp"]
+[project.entry-points."openedx.lms.djangoapp"]
 ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"
 
-[project.entry-points."cms.djangoapp"]
+[project.entry-points."openedx.cms.djangoapp"]
 ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"
 
 [tool.setuptools.packages.find]
