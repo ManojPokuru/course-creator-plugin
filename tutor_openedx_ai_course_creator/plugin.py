@@ -8,7 +8,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items([
 ])
 
 hooks.Filters.IMAGES_BUILD_MOUNTS.add_item(
-    ("openedx", "ai-course-creator")
+    ("openedx", "studio-course-creator-plugin")
 )
 
 
@@ -17,7 +17,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "openedx-dockerfile-post-python-requirements",
         """
 # Install AI Course Creator Django app
-RUN pip install --no-deps -e /mnt/ai-course-creator
+RUN pip install --no-deps -e /mnt/studio-course-creator-plugin
 """
     )
 )
