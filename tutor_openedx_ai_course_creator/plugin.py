@@ -8,7 +8,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items([
 ])
 
 hooks.Filters.IMAGES_BUILD_MOUNTS.add_item(
-    ("openedx", "ai-course-creator", "/mnt/ai-course-creator")
+    ("openedx", "ai-course-creator")
 )
 
 
