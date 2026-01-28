@@ -1,31 +1,32 @@
 from django.apps import AppConfig
-
+from edx_django_utils.plugins import PluginSettings, PluginURLs
+from openedx.core.djangoapps.plugins.constants import ProjectType, SettingsType
 
 class AiCourseCreatorConfig(AppConfig):
-    """
-    Configuration for the ai_course_creator Django application.
-    """
-
-    name = 'ai_course_creator'
+    name = "ai_course_creator"
+    label = "ai_course_creator"
+    verbose_name = "AI Course Creator"
 
     plugin_app = {
-        'url_config': {
-            'lms.djangoapp': {
-                'namespace': 'ai_course_creator',
-                'relative_path': 'urls',
+        PluginURLs.CONFIG: {
+            ProjectType.LMS: {
+                PluginURLs.NAMESPACE: "ai_course_creator",
+                PluginURLs.REGEX: r"^ai-course-creator/",
+                PluginURLs.RELATIVE_PATH: "urls",
             },
-            'cms.djangoapp': {
-                'namespace': 'ai_course_creator',
-                'relative_path': 'urls',
-            }
+            ProjectType.CMS: {
+                PluginURLs.NAMESPACE: "ai_course_creator",
+                PluginURLs.REGEX: r"^ai-course-creator/",
+                PluginURLs.RELATIVE_PATH: "urls",
+            },
         },
-        'settings_config': {
-            'lms.djangoapp': {
-                'common': {'relative_path': 'settings'},
+        PluginSettings.CONFIG: {
+            ProjectType.LMS: {
+                SettingsType.COMMON: {PluginSettings.RELATIVE_PATH: "settings.common"},
             },
-            'cms.djangoapp': {
-                'common': {'relative_path': 'settings'},
-            }
+            ProjectType.CMS: {
+                SettingsType.COMMON: {PluginSettings.RELATIVE_PATH: "settings.common"},
+            },
         },
     }
 
