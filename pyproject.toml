@@ -6,14 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "tutor-openedx-ai-course-creator"
 version = "0.1.0"
 description = "AI Course Creator plugin for Open edX and Tutor"
-authors = [{name = "Your Name", email = "your.email@example.com"}]
 requires-python = ">=3.8"
 dependencies = [
     "tutor>=18.0.0,<21.0.0",
 ]
 
 [project.optional-dependencies]
-# Django app dependencies (installed separately)
 app = [
     "Django>=3.2",
     "edx-django-utils",
@@ -23,33 +21,18 @@ app = [
     "httpx",
 ]
 
-# Entry point for Tutor plugin
 [project.entry-points."tutor.plugin.v1"]
 openedx_ai_course_creator = "tutor_openedx_ai_course_creator.plugin"
 
-# Entry points for Django app (auto-discovered by Open edX)
 [project.entry-points."lms.djangoapp"]
 ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"
 
 [project.entry-points."cms.djangoapp"]
 ai_course_creator = "ai_course_creator.apps:AiCourseCreatorConfig"
 
-# Package discovery
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ai_course_creator*", "tutor_openedx_ai_course_creator*"]
 
-# Include static files and templates
 [tool.setuptools.package-data]
 ai_course_creator = ["templates/**/*", "static/**/*"]
-tutor_openedx_ai_course_creator = ["patches/**/*"]
-```
-
-### **4. Create `MANIFEST.in`**
-```
-recursive-include ai_course_creator/static *
-recursive-include ai_course_creator/templates *
-recursive-include tutor_openedx_ai_course_creator/patches *
-global-exclude *.pyc
-global-exclude __pycache__
-global-exclude *.pyo
