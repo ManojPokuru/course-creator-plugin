@@ -1,7 +1,7 @@
 """
-Tutor plugin for Open edX AI Course Creator
+Tutor plugin for AI Course Creator
 """
-
-from __future__ import annotations
-
 __version__ = "0.1.0"
+
+# Import plugin hooks
+from . import plugin
